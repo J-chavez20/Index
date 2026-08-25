@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Control de Asistencia QR</title>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      text-align: center;
+      background-color: #f0f2f5;
+      margin: 0;
+      padding: 15px;
+    }
+    .card {
+      max-width: 450px;
+      margin: 20px auto;
+      background: #ffffff;
+      padding: 25px;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    h2 { color: #1a73e8; margin-bottom: 5px; }
+    #reader { width: 100%; border-radius: 12px; overflow: hidden; background: #000; margin: 15px 0; }
+    #status-box {
+      padding: 15px;
+      border-radius: 10px;
+      font-weight: bold;
+      font-size: 16px;
+      background: #e8f0fe;
+      color: #1967d2;
+    }
+    .status-ok { background: #d4edda !important; color: #155724 !important; }
+    .status-error { background: #f8d7da !important; color: #721c24 !important; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>🎓 Control de Asistencia QR</h2>
+    <p>Acerque su código a la cámara</p>
+
+    <div id="reader"></div>
+
+    <div id="status-box">📷 Solicitando permiso de cámara...</div>
+  </div>
+
+  <script>
+    // PEGA AQUÍ TU URL DE GOOGLE APPS SCRIPT
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzwrXe5Dzaiyq57gOvhKVTB8SJILUZLdCmXDhKEdkAFxltRSL1Pum43yLUeP1A.../exec";
+
+    let html5QrCode;
+    let procesando = false;
+
+    function playBeep() {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.frequency.value = 880;
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.15);
+      } catch(e) {}
+    }
+
+    function onScanSuccess(decodedText) {
+      if (procesando) return;
+      procesando = true;
+      playBeep();
+
+      const box = document.getElementById('status-box');
+      box.className = '';
+      box.innerHTML = `⏳ Verificando: <b>${decodedText}</b>...`;
+
+      fetch(`${WEB_APP_URL}?qr=${encodeURIComponent(decodedText)}`)
+        .then(response => response.json())
+        .then(res => {
+          if (res.estado === 'ok') {
+            box.className = 'status-ok';
+            box.innerHTML = `✅ ¡BIENVENIDO!<br><b>${res.nombre}</b><br><small>Hora: ${res.hora}</small>`;
+          } else {
+            box.className = 'status-error';
+            box.innerHTML = `❌ ${res.mensaje}`;
+          }
+          setTimeout(() => {
+            box.className = '';
+            box.innerHTML = '📷 ESCANEANDO EN VIVO... Listo para el siguiente QR';
+            procesando = false;
+          }, 3000);
+        })
+        .catch(err => {
+          box.className = 'status-error';
+          box.innerHTML = '❌ Error de conexión con el servidor.';
+          setTimeout(() => { procesando = false; }, 3000);
+        });
+    }
+
+    window.onload = function() {
+      html5QrCode = new Html5Qrcode("reader");
+      const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+
+      html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess)
+        .catch(() => {
+          html5QrCode.start({ facingMode: "user" }, config, onScanSuccess)
+            .catch(() => {
+              const box = document.getElementById('status-box');
+              box.className = 'status-error';
+              box.innerHTML = "❌ Acceso a la cámara denegado.";
+            });
+        });
+    };
+  </script>
+
+</body>
+</html>
