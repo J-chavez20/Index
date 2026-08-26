@@ -22,6 +22,15 @@
     #msg, #loginMsg { margin-top: 15px; padding: 10px; border-radius: 8px; text-align: center; font-weight: bold; display: none; }
     .ok { background-color: #d4edda; color: #155724; display: block !important; }
     .error { background-color: #f8d7da; color: #721c24; display: block !important; }
+
+    /* Estilos para la vista de QR generado */
+    #qrContainer { display: none; text-align: center; margin-top: 20px; border-top: 2px dashed #ddd; padding-top: 15px; }
+    #qrContainer img { width: 180px; height: 180px; border: 1px solid #ddd; border-radius: 8px; padding: 5px; }
+    .btn-ws { background-color: #25D366 !important; }
+    .btn-ws:hover { background-color: #1eb954 !important; }
+    .btn-down { background-color: #34a853 !important; }
+    .btn-down:hover { background-color: #2d8e47 !important; }
+
     .nav { text-align: center; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
     .nav a { color: #1a73e8; text-decoration: none; font-size: 14px; margin: 0 8px; font-weight: 500; }
   </style>
@@ -58,20 +67,21 @@
           <input type="text" id="nombre" class="uppercase-input" placeholder="Ej: JUAN PÉREZ" required>
         </div>
 
-        <div class="form-group">
-          <label>Celular 1 (Opcional)</label>
-          <input type="tel" id="celular1" placeholder="Ej: 987654321">
-        </div>
-
-        <div class="form-group">
-          <label>Celular 2 (Opcional)</label>
-          <input type="tel" id="celular2" placeholder="Ej: 912345678">
-        </div>
-
         <button type="submit" id="btnGuardar">Guardar Estudiante</button>
       </form>
 
       <div id="msg"></div>
+
+      <!-- SECCIÓN DE DESCARGA Y COMPARTIR QR -->
+      <div id="qrContainer">
+        <h3 id="qrAlumnoNombre" style="margin: 5px 0; color: #333;"></h3>
+        <p id="qrAlumnoCodigo" style="margin: 0 0 10px 0; color: #666; font-size: 14px;"></p>
+        <img id="qrImg" src="" alt="Código QR">
+        
+        <button type="button" class="btn-down" onclick="descargarQR()">📥 Descargar QR al Celular</button>
+        <button type="button" class="btn-ws" onclick="compartirWhatsApp()">📲 Compartir por WhatsApp</button>
+      </div>
+
     </div>
 
     <div class="nav">
@@ -82,8 +92,10 @@
   </div>
 
   <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzwrXe5Dzaiyq57gOvhKVTB8SJlLUZLdCmXDhKEdkAFxItRSL1lPum43yLUeP1AM7z_/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzwrXe5Dzaiyq57gOvhKVTB8SJlLUZLdCmXDhKEdkAFxItRSL1lPum43yLUeP1AM7z_/exec"; // Reemplaza con tu URL
     const PIN_CORRECTO = "1234"; 
+
+    let datosRegistroActual = null;
 
     function validarPin() {
       const pinIngresado = document.getElementById('pinInput').value;
@@ -102,23 +114,21 @@
       e.preventDefault();
       const btn = document.getElementById('btnGuardar');
       const msg = document.getElementById('msg');
+      const qrContainer = document.getElementById('qrContainer');
 
       btn.disabled = true;
       btn.innerText = "⏳ Guardando...";
       msg.className = "";
       msg.style.display = "none";
+      qrContainer.style.display = "none";
 
       const codigo = document.getElementById('codigo').value.trim();
       const nombre = document.getElementById('nombre').value.trim();
-      const cel1 = document.getElementById('celular1').value.trim();
-      const cel2 = document.getElementById('celular2').value.trim();
 
       const urlFinal = WEB_APP_URL + 
         "?action=registrarAlumno" +
         "&codigo=" + encodeURIComponent(codigo) +
-        "&nombre=" + encodeURIComponent(nombre) +
-        "&celular1=" + encodeURIComponent(cel1) +
-        "&celular2=" + encodeURIComponent(cel2);
+        "&nombre=" + encodeURIComponent(nombre);
 
       fetch(urlFinal, {
         method: 'GET',
@@ -135,6 +145,15 @@
         if (data.estado === 'ok') {
           msg.className = "ok";
           msg.innerText = "✅ " + data.mensaje;
+          
+          datosRegistroActual = data;
+
+          // Mostrar tarjeta QR para descargar/compartir
+          document.getElementById('qrAlumnoNombre').innerText = data.nombre;
+          document.getElementById('qrAlumnoCodigo').innerText = "CÓDIGO: " + data.codigo;
+          document.getElementById('qrImg').src = data.qrUrl;
+          qrContainer.style.display = "block";
+
           document.getElementById('formAlumno').reset();
         } else {
           msg.className = "error";
@@ -148,6 +167,30 @@
         msg.className = "error";
         msg.innerText = "❌ Error al conectar con el servidor.";
       });
+    }
+
+    function descargarQR() {
+      if (!datosRegistroActual) return;
+      
+      fetch(datosRegistroActual.qrUrl)
+        .then(res => res.blob())
+        .then(blob => {
+          const blobUrl = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = blobUrl;
+          link.download = `QR_${datosRegistroActual.codigo}.png`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        })
+        .catch(() => alert("No se pudo descargar directamente. Mantén presionada la imagen del QR para guardarla."));
+    }
+
+    function compartirWhatsApp() {
+      if (!datosRegistroActual) return;
+      const texto = `Hola *${datosRegistroActual.nombre}*, aquí tienes tu enlace directo para visualizar y guardar tu código QR de asistencia: ${datosRegistroActual.qrUrl}`;
+      const urlWs = `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
+      window.open(urlWs, '_blank');
     }
   </script>
 
