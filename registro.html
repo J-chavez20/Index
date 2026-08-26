@@ -82,7 +82,7 @@
   </div>
 
   <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzwrXe5Dzaiyq57gOvhKVTB8SJlLUZLdCmXDhKEdkAFxItRSL1lPum43yLUeP1AM7z_/exec"; // Reemplaza con tu URL
+    const WEB_APP_URL = "https://script.google.com/macros/s/TU_ID_DE_DESPLIEGUE/exec";
     const PIN_CORRECTO = "1234"; 
 
     function validarPin() {
@@ -113,30 +113,41 @@
       const cel1 = document.getElementById('celular1').value.trim();
       const cel2 = document.getElementById('celular2').value.trim();
 
-      // Petición formateada directamente en la URL para evitar bloqueos CORS/Redirección
-      const urlFinal = `${WEB_APP_URL}?action=registrarAlumno&codigo=${encodeURIComponent(codigo)}&nombre=${encodeURIComponent(nombre)}&celular1=${encodeURIComponent(cel1)}&celular2=${encodeURIComponent(cel2)}`;
+      const urlFinal = WEB_APP_URL + 
+        "?action=registrarAlumno" +
+        "&codigo=" + encodeURIComponent(codigo) +
+        "&nombre=" + encodeURIComponent(nombre) +
+        "&celular1=" + encodeURIComponent(cel1) +
+        "&celular2=" + encodeURIComponent(cel2);
 
-      fetch(urlFinal)
-        .then(res => res.json())
-        .then(data => {
-          btn.disabled = false;
-          btn.innerText = "Guardar Estudiante";
-          
-          if (data.estado === 'ok') {
-            msg.className = "ok";
-            msg.innerText = "✅ " + data.mensaje;
-            document.getElementById('formAlumno').reset();
-          } else {
-            msg.className = "error";
-            msg.innerText = "❌ " + data.mensaje;
-          }
-        })
-        .catch(err => {
-          btn.disabled = false;
-          btn.innerText = "Guardar Estudiante";
+      fetch(urlFinal, {
+        method: 'GET',
+        redirect: 'follow'
+      })
+      .then(response => {
+        if (!response.ok) throw new Error("Error en la respuesta del servidor");
+        return response.json();
+      })
+      .then(data => {
+        btn.disabled = false;
+        btn.innerText = "Guardar Estudiante";
+        
+        if (data.estado === 'ok') {
+          msg.className = "ok";
+          msg.innerText = "✅ " + data.mensaje;
+          document.getElementById('formAlumno').reset();
+        } else {
           msg.className = "error";
-          msg.innerText = "❌ Error al conectar con el servidor.";
-        });
+          msg.innerText = "❌ " + data.mensaje;
+        }
+      })
+      .catch(err => {
+        console.error("Fetch Error:", err);
+        btn.disabled = false;
+        btn.innerText = "Guardar Estudiante";
+        msg.className = "error";
+        msg.innerText = "❌ Error al conectar con el servidor.";
+      });
     }
   </script>
 
