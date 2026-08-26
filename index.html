@@ -76,27 +76,30 @@
       box.className = '';
       box.innerHTML = `⏳ Verificando: <b>${decodedText}</b>...`;
 
-      fetch(`${WEB_APP_URL}?qr=${encodeURIComponent(decodedText)}`)
-        .then(response => response.json())
-        .then(res => {
-          if (res.estado === 'ok') {
-            box.className = 'status-ok';
-            box.innerHTML = `✅ ¡BIENVENIDO!<br><b>${res.nombre}</b><br><small>Hora: ${res.hora}</small>`;
-          } else {
-            box.className = 'status-error';
-            box.innerHTML = `❌ ${res.mensaje}`;
-          }
-          setTimeout(() => {
-            box.className = '';
-            box.innerHTML = '📷 ESCANEANDO EN VIVO... Listo para el siguiente QR';
-            procesando = false;
-          }, 3000);
-        })
-        .catch(err => {
-          box.className = 'status-error';
-          box.innerHTML = '❌ Error de conexión con el servidor.';
-          setTimeout(() => { procesando = false; }, 3000);
-        });
+      fetch(`${WEB_APP_URL}?qr=${encodeURIComponent(decodedText)}`, {
+  method: 'GET',
+  redirect: 'follow'
+})
+.then(response => response.json())
+.then(res => {
+  if (res.estado === 'ok') {
+    box.className = 'status-ok';
+    box.innerHTML = `✅ ¡BIENVENIDO!<br><b>${res.nombre}</b><br><small>Hora: ${res.hora}</small>`;
+  } else {
+    box.className = 'status-error';
+    box.innerHTML = `❌ ${res.mensaje}`;
+  }
+  setTimeout(() => {
+    box.className = '';
+    box.innerHTML = '📷 ESCANEANDO EN VIVO... Listo para el siguiente QR';
+    procesando = false;
+  }, 3000);
+})
+.catch(err => {
+  box.className = 'status-error';
+  box.innerHTML = '❌ Error de conexión con el servidor.';
+  setTimeout(() => { procesando = false; }, 3000);
+});
     }
 
     window.onload = function() {
