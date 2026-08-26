@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro de Nuevo Alumno</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; margin: 0; }
+    .card { max-width: 450px; margin: 20px auto; background: #fff; padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    h2 { color: #1a73e8; margin-top: 0; text-align: center; }
+    .form-group { margin-bottom: 15px; text-align: left; }
+    label { display: block; font-weight: bold; margin-bottom: 5px; color: #333; }
+    input { width: 100%; padding: 10px; font-size: 15px; border: 1px solid #ccc; border-radius: 8px; outline: none; }
+    button { width: 100%; padding: 12px; font-size: 16px; font-weight: bold; color: white; background-color: #1a73e8; border: none; border-radius: 8px; cursor: pointer; margin-top: 10px; }
+    button:hover { background-color: #1557b0; }
+    
+    /* Pantallas */
+    #secLogin { text-align: center; }
+    #secForm { display: none; } /* Oculto hasta autenticarse */
+
+    #msg, #loginMsg { margin-top: 15px; padding: 10px; border-radius: 8px; text-align: center; font-weight: bold; display: none; }
+    .ok { background-color: #d4edda; color: #155724; display: block !important; }
+    .error { background-color: #f8d7da; color: #721c24; display: block !important; }
+    .nav { text-align: center; margin-top: 15px; }
+    .nav a { color: #1a73e8; text-decoration: none; font-size: 14px; margin: 0 10px; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    
+    <!-- PANTALLA 1: INGRESO DE CLAVE ENCARGADO -->
+    <div id="secLogin">
+      <h2>🔒 Acceso Restringido</h2>
+      <p style="color: #666; font-size: 14px;">Ingrese la clave de encargado para registrar nuevos estudiantes.</p>
+      
+      <div class="form-group">
+        <input type="password" id="pinInput" placeholder="Ingrese PIN (ej: 1234)" style="text-align: center; font-size: 18px;">
+      </div>
+      
+      <button type="button" onclick="validarPin()">Ingresar al Sistema</button>
+      <div id="loginMsg"></div>
+    </div>
+
+    <!-- PANTALLA 2: FORMULARIO DE REGISTRO DE ALUMNOS -->
+    <div id="secForm">
+      <h2>📝 Nuevo Estudiante</h2>
+      
+      <form id="formAlumno" onsubmit="guardarAlumno(event)">
+        <div class="form-group">
+          <label>Código del Estudiante *</label>
+          <input type="text" id="codigo" placeholder="Ej: EST002" required>
+        </div>
+
+        <div class="form-group">
+          <label>Nombres y Apellidos *</label>
+          <input type="text" id="nombre" placeholder="Ej: Juan Pérez" required>
+        </div>
+
+        <div class="form-group">
+          <label>Celular 1</label>
+          <input type="tel" id="celular1" placeholder="Ej: 987654321">
+        </div>
+
+        <div class="form-group">
+          <label>Celular 2 (Opcional)</label>
+          <input type="tel" id="celular2" placeholder="Ej: 912345678">
+        </div>
+
+        <button type="submit" id="btnGuardar">Guardar Estudiante</button>
+      </form>
+
+      <div id="msg"></div>
+    </div>
+
+    <div class="nav">
+      <a href="index.html">📷 Escáner</a> | 
+      <a href="consulta.html">🔍 Consulta</a>
+    </div>
+
+  </div>
+
+  <script>
+    const WEB_APP_URL = "https://script.google.com/macros/s/TU_ID_DE_DESPLIEGUE/exec";
+    const PIN_CORRECTO = "1234"; // Define aquí tu PIN de acceso
+
+    // Función para validar la clave del encargado
+    function validarPin() {
+      const pinIngresado = document.getElementById('pinInput').value;
+      const loginMsg = document.getElementById('loginMsg');
+
+      if (pinIngresado === PIN_CORRECTO) {
+        document.getElementById('secLogin').style.display = "none";
+        document.getElementById('secForm').style.display = "block";
+      } else {
+        loginMsg.className = "error";
+        loginMsg.innerText = "❌ Clave incorrecta. Acceso denegado.";
+      }
+    }
+
+    // Función para enviar los datos a Google Apps Script
+    function guardarAlumno(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btnGuardar');
+      const msg = document.getElementById('msg');
+
+      btn.disabled = true;
+      btn.innerText = "⏳ Guardando...";
+      msg.className = "";
+      msg.style.display = "none";
+
+      const params = new URLSearchParams({
+        action: 'registrarAlumno',
+        codigo: document.getElementById('codigo').value,
+        nombre: document.getElementById('nombre').value,
+        celular1: document.getElementById('celular1').value,
+        celular2: document.getElementById('celular2').value
+      });
+
+      fetch(`${WEB_APP_URL}?${params.toString()}`)
+        .then(res => res.json())
+        .then(data => {
+          btn.disabled = false;
+          btn.innerText = "Guardar Estudiante";
+          
+          if (data.estado === 'ok') {
+            msg.className = "ok";
+            msg.innerText = "✅ " + data.mensaje;
+            document.getElementById('formAlumno').reset();
+          } else {
+            msg.className = "error";
+            msg.innerText = "❌ " + data.mensaje;
+          }
+        })
+        .catch(err => {
+          btn.disabled = false;
+          btn.innerText = "Guardar Estudiante";
+          msg.className = "error";
+          msg.innerText = "❌ Error al conectar con el servidor.";
+        });
+    }
+  </script>
+
+</body>
+</html>
