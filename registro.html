@@ -16,23 +16,23 @@
     button:hover { background-color: #1557b0; }
     
     #secLogin { text-align: center; }
-    #secForm { display: none; } /* Oculto inicialmente */
+    #secForm { display: none; }
 
     #msg, #loginMsg { margin-top: 15px; padding: 10px; border-radius: 8px; text-align: center; font-weight: bold; display: none; }
     .ok { background-color: #d4edda; color: #155724; display: block !important; }
     .error { background-color: #f8d7da; color: #721c24; display: block !important; }
     .nav { text-align: center; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
-    .nav a { color: #1a73e8; text-decoration: none; font-size: 14px; margin: 0 10px; font-weight: 500; }
+    .nav a { color: #1a73e8; text-decoration: none; font-size: 14px; margin: 0 8px; font-weight: 500; }
   </style>
 </head>
 <body>
 
   <div class="card">
     
-    <!-- PANTALLA 1: VALIDACIÓN DE PIN (Muestra al ingresar a registro.html) -->
+    <!-- PANTALLA 1: INGRESO DE CLAVE ENCARGADO -->
     <div id="secLogin">
       <h2>🔒 Acceso Restringido</h2>
-      <p style="color: #666; font-size: 14px;">Solo personal autorizado. Ingrese la clave de encargado para continuar.</p>
+      <p style="color: #666; font-size: 14px;">Ingrese la clave de encargado para registrar nuevos estudiantes.</p>
       
       <div class="form-group">
         <input type="password" id="pinInput" placeholder="Ingrese PIN" style="text-align: center; font-size: 18px;" onkeypress="if(event.key==='Enter') validarPin()">
@@ -42,7 +42,7 @@
       <div id="loginMsg"></div>
     </div>
 
-    <!-- PANTALLA 2: FORMULARIO DE REGISTRO (Se habilita tras validar PIN) -->
+    <!-- PANTALLA 2: FORMULARIO DE REGISTRO -->
     <div id="secForm">
       <h2>📝 Registrar Nuevo Estudiante</h2>
       
@@ -73,7 +73,6 @@
       <div id="msg"></div>
     </div>
 
-    <!-- NAVEGACIÓN ENTRE PÁGINAS -->
     <div class="nav">
       <a href="index.html">📷 Escáner</a> | 
       <a href="consulta.html">🔍 Consulta</a>
@@ -83,7 +82,7 @@
 
   <script>
     const WEB_APP_URL = "https://script.google.com/macros/s/TU_ID_DE_DESPLIEGUE/exec";
-    const PIN_CORRECTO = "1234"; // Cambia aquí tu PIN
+    const PIN_CORRECTO = "1234"; // Cambia tu clave aquí
 
     function validarPin() {
       const pinIngresado = document.getElementById('pinInput').value;
