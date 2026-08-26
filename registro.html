@@ -82,8 +82,8 @@
   </div>
 
   <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzwrXe5Dzaiyq57gOvhKVTB8SJlLUZLdCmXDhKEdkAFxItRSL1lPum43yLUeP1AM7z_/exec";
-    const PIN_CORRECTO = "1234"; // Define aquí tu PIN de acceso
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzwrXe5Dzaiyq57gOvhKVTB8SJlLUZLdCmXDhKEdkAFxItRSL1lPum43yLUeP1AM7z_/exec"; // Reemplaza con tu URL
+    const PIN_CORRECTO = "1234"; 
 
     function validarPin() {
       const pinIngresado = document.getElementById('pinInput').value;
@@ -108,15 +108,15 @@
       msg.className = "";
       msg.style.display = "none";
 
-      const params = new URLSearchParams({
-        action: 'registrarAlumno',
-        codigo: document.getElementById('codigo').value,
-        nombre: document.getElementById('nombre').value,
-        celular1: document.getElementById('celular1').value,
-        celular2: document.getElementById('celular2').value
-      });
+      const codigo = document.getElementById('codigo').value.trim();
+      const nombre = document.getElementById('nombre').value.trim();
+      const cel1 = document.getElementById('celular1').value.trim();
+      const cel2 = document.getElementById('celular2').value.trim();
 
-      fetch(`${WEB_APP_URL}?${params.toString()}`)
+      // Petición formateada directamente en la URL para evitar bloqueos CORS/Redirección
+      const urlFinal = `${WEB_APP_URL}?action=registrarAlumno&codigo=${encodeURIComponent(codigo)}&nombre=${encodeURIComponent(nombre)}&celular1=${encodeURIComponent(cel1)}&celular2=${encodeURIComponent(cel2)}`;
+
+      fetch(urlFinal)
         .then(res => res.json())
         .then(data => {
           btn.disabled = false;
