@@ -3,123 +3,68 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Control de Asistencia QR</title>
-  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <title>Escáner de Asistencia</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
     * { box-sizing: border-box; }
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      text-align: center;
-      background-color: #f0f2f5;
-      margin: 0;
-      padding: 15px;
-    }
-    .card {
-      max-width: 450px;
-      margin: 20px auto;
-      background: #ffffff;
-      padding: 25px;
-      border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-    }
-    h2 { color: #1a73e8; margin-bottom: 5px; }
-    #reader { width: 100%; border-radius: 12px; overflow: hidden; background: #000; margin: 15px 0; }
-    #status-box {
-      padding: 15px;
-      border-radius: 10px;
-      font-weight: bold;
-      font-size: 16px;
-      background: #e8f0fe;
-      color: #1967d2;
-    }
-    .status-ok { background: #d4edda !important; color: #155724 !important; }
-    .status-error { background: #f8d7da !important; color: #721c24 !important; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; margin: 0; text-align: center; }
+    .card { max-width: 450px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    h2 { color: #1a73e8; margin-top: 0; }
+    #reader { width: 100%; border-radius: 12px; overflow: hidden; margin-bottom: 15px; }
+    #msg { margin-top: 15px; padding: 12px; border-radius: 8px; font-weight: bold; display: none; }
+    .ok { background-color: #d4edda; color: #155724; display: block !important; }
+    .error { background-color: #f8d7da; color: #721c24; display: block !important; }
+    .nav { margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
+    .nav a { color: #1a73e8; text-decoration: none; font-size: 14px; margin: 0 8px; font-weight: 500; }
   </style>
 </head>
 <body>
 
   <div class="card">
-    <h2>🎓 Control de Asistencia QR</h2>
-    <p>Acerque su código a la cámara</p>
-
+    <h2>📷 Control de Asistencia</h2>
     <div id="reader"></div>
+    <div id="msg"></div>
 
-    <div id="status-box">📷 Solicitando permiso de cámara...</div>
     <div class="nav">
-  <a href="consulta.html">🔍 Consulta de Asistencia</a> | 
-  <a href="registro.html">📝 Registrar Alumno</a>
-</div>
+      <a href="consulta.html">🔍 Consulta de Asistencia</a> | 
+      <a href="registro.html">📝 Registrar Alumno</a>
+    </div>
   </div>
 
   <script>
-    // PEGA AQUÍ TU URL DE GOOGLE APPS SCRIPT
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzwrXe5Dzaiyq57gOvhKVTB8SJlLUZLdCmXDhKEdkAFxItRSL1lPum43yLUeP1AM7z_/exec";
-
-    let html5QrCode;
-    let procesando = false;
-
-    function playBeep() {
-      try {
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.frequency.value = 880;
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.15);
-      } catch(e) {}
-    }
+    let escaneando = false;
 
     function onScanSuccess(decodedText) {
-      if (procesando) return;
-      procesando = true;
-      playBeep();
+      if (escaneando) return;
+      escaneando = true;
 
-      const box = document.getElementById('status-box');
-      box.className = '';
-      box.innerHTML = `⏳ Verificando: <b>${decodedText}</b>...`;
+      const msg = document.getElementById('msg');
+      msg.className = "";
+      msg.style.display = "block";
+      msg.innerText = "⏳ Procesando asistencia...";
 
-      fetch(`${WEB_APP_URL}?qr=${encodeURIComponent(decodedText)}`, {
-  method: 'GET',
-  redirect: 'follow'
-})
-.then(response => response.json())
-.then(res => {
-  if (res.estado === 'ok') {
-    box.className = 'status-ok';
-    box.innerHTML = `✅ ¡BIENVENIDO!<br><b>${res.nombre}</b><br><small>Hora: ${res.hora}</small>`;
-  } else {
-    box.className = 'status-error';
-    box.innerHTML = `❌ ${res.mensaje}`;
-  }
-  setTimeout(() => {
-    box.className = '';
-    box.innerHTML = '📷 ESCANEANDO EN VIVO... Listo para el siguiente QR';
-    procesando = false;
-  }, 3000);
-})
-.catch(err => {
-  box.className = 'status-error';
-  box.innerHTML = '❌ Error de conexión con el servidor.';
-  setTimeout(() => { procesando = false; }, 3000);
-});
+      fetch(`${WEB_APP_URL}?qr=${encodeURIComponent(decodedText)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.estado === 'ok') {
+            msg.className = "ok";
+            msg.innerText = `✅ ¡Asistencia registrada!\n${data.nombre} (${data.hora})`;
+          } else {
+            msg.className = "error";
+            msg.innerText = "❌ " + data.mensaje;
+          }
+          setTimeout(() => { escaneando = false; }, 3000);
+        })
+        .catch(err => {
+          msg.className = "error";
+          msg.innerText = "❌ Error al conectar con el servidor.";
+          setTimeout(() => { escaneando = false; }, 3000);
+        });
     }
 
-    window.onload = function() {
-      html5QrCode = new Html5Qrcode("reader");
-      const config = { fps: 10, qrbox: { width: 250, height: 250 } };
-
-      html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess)
-        .catch(() => {
-          html5QrCode.start({ facingMode: "user" }, config, onScanSuccess)
-            .catch(() => {
-              const box = document.getElementById('status-box');
-              box.className = 'status-error';
-              box.innerHTML = "❌ Acceso a la cámara denegado.";
-            });
-        });
-    };
+    const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
+    html5QrcodeScanner.render(onScanSuccess);
   </script>
 
 </body>
