@@ -23,9 +23,9 @@
     .ok { background-color: #d4edda; color: #155724; display: block !important; }
     .error { background-color: #f8d7da; color: #721c24; display: block !important; }
 
-    /* Estilos para la vista de QR generado */
+    /* Estilos para la tarjeta QR generada */
     #qrContainer { display: none; text-align: center; margin-top: 20px; border-top: 2px dashed #ddd; padding-top: 15px; }
-    #qrContainer img { width: 180px; height: 180px; border: 1px solid #ddd; border-radius: 8px; padding: 5px; }
+    #qrContainer img { width: 180px; height: 180px; border: 1px solid #ddd; border-radius: 8px; padding: 5px; background: #fff; }
     .btn-ws { background-color: #25D366 !important; }
     .btn-ws:hover { background-color: #1eb954 !important; }
     .btn-down { background-color: #34a853 !important; }
@@ -52,7 +52,7 @@
       <div id="loginMsg"></div>
     </div>
 
-    <!-- PANTALLA 2: FORMULARIO DE REGISTRO -->
+    <!-- PANTALLA 2: FORMULARIO DE REGISTRO (SIN CELULARES) -->
     <div id="secForm">
       <h2>📝 Registrar Nuevo Estudiante</h2>
       
@@ -92,7 +92,7 @@
   </div>
 
   <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzwrXe5Dzaiyq57gOvhKVTB8SJlLUZLdCmXDhKEdkAFxItRSL1lPum43yLUeP1AM7z_/exec"; // Reemplaza con tu URL
+    const WEB_APP_URL = "https://script.google.com/macros/s/TU_ID_DE_DESPLIEGUE/exec"; // Reemplaza con tu URL
     const PIN_CORRECTO = "1234"; 
 
     let datosRegistroActual = null;
