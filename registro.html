@@ -15,37 +15,36 @@
     button { width: 100%; padding: 12px; font-size: 16px; font-weight: bold; color: white; background-color: #1a73e8; border: none; border-radius: 8px; cursor: pointer; margin-top: 10px; }
     button:hover { background-color: #1557b0; }
     
-    /* Pantallas */
     #secLogin { text-align: center; }
-    #secForm { display: none; } /* Oculto hasta autenticarse */
+    #secForm { display: none; } /* Oculto inicialmente */
 
     #msg, #loginMsg { margin-top: 15px; padding: 10px; border-radius: 8px; text-align: center; font-weight: bold; display: none; }
     .ok { background-color: #d4edda; color: #155724; display: block !important; }
     .error { background-color: #f8d7da; color: #721c24; display: block !important; }
-    .nav { text-align: center; margin-top: 15px; }
-    .nav a { color: #1a73e8; text-decoration: none; font-size: 14px; margin: 0 10px; }
+    .nav { text-align: center; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
+    .nav a { color: #1a73e8; text-decoration: none; font-size: 14px; margin: 0 10px; font-weight: 500; }
   </style>
 </head>
 <body>
 
   <div class="card">
     
-    <!-- PANTALLA 1: INGRESO DE CLAVE ENCARGADO -->
+    <!-- PANTALLA 1: VALIDACIÓN DE PIN (Muestra al ingresar a registro.html) -->
     <div id="secLogin">
       <h2>🔒 Acceso Restringido</h2>
-      <p style="color: #666; font-size: 14px;">Ingrese la clave de encargado para registrar nuevos estudiantes.</p>
+      <p style="color: #666; font-size: 14px;">Solo personal autorizado. Ingrese la clave de encargado para continuar.</p>
       
       <div class="form-group">
-        <input type="password" id="pinInput" placeholder="Ingrese PIN (ej: 1234)" style="text-align: center; font-size: 18px;">
+        <input type="password" id="pinInput" placeholder="Ingrese PIN" style="text-align: center; font-size: 18px;" onkeypress="if(event.key==='Enter') validarPin()">
       </div>
       
-      <button type="button" onclick="validarPin()">Ingresar al Sistema</button>
+      <button type="button" onclick="validarPin()">Ingresar al Registro</button>
       <div id="loginMsg"></div>
     </div>
 
-    <!-- PANTALLA 2: FORMULARIO DE REGISTRO DE ALUMNOS -->
+    <!-- PANTALLA 2: FORMULARIO DE REGISTRO (Se habilita tras validar PIN) -->
     <div id="secForm">
-      <h2>📝 Nuevo Estudiante</h2>
+      <h2>📝 Registrar Nuevo Estudiante</h2>
       
       <form id="formAlumno" onsubmit="guardarAlumno(event)">
         <div class="form-group">
@@ -74,6 +73,7 @@
       <div id="msg"></div>
     </div>
 
+    <!-- NAVEGACIÓN ENTRE PÁGINAS -->
     <div class="nav">
       <a href="index.html">📷 Escáner</a> | 
       <a href="consulta.html">🔍 Consulta</a>
@@ -83,9 +83,8 @@
 
   <script>
     const WEB_APP_URL = "https://script.google.com/macros/s/TU_ID_DE_DESPLIEGUE/exec";
-    const PIN_CORRECTO = "1234"; // Define aquí tu PIN de acceso
+    const PIN_CORRECTO = "1234"; // Cambia aquí tu PIN
 
-    // Función para validar la clave del encargado
     function validarPin() {
       const pinIngresado = document.getElementById('pinInput').value;
       const loginMsg = document.getElementById('loginMsg');
@@ -99,7 +98,6 @@
       }
     }
 
-    // Función para enviar los datos a Google Apps Script
     function guardarAlumno(e) {
       e.preventDefault();
       const btn = document.getElementById('btnGuardar');
