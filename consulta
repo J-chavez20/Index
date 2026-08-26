@@ -1,1 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Consulta de Asistencia</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f0f2f5;
+      margin: 0;
+      padding: 15px;
+      text-align: center;
+    }
+    .card {
+      max-width: 500px;
+      margin: 20px auto;
+      background: #ffffff;
+      padding: 25px;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    h2 { color: #1a73e8; margin-bottom: 15px; }
+    .search-box {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    input {
+      flex: 1;
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      outline: none;
+    }
+    button {
+      padding: 12px 20px;
+      font-size: 16px;
+      font-weight: bold;
+      color: white;
+      background-color: #1a73e8;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover { background-color: #1557b0; }
+    #resultado { margin-top: 15px; text-align: left; }
+    .alumno-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #202124;
+      margin-bottom: 10px;
+      padding-bottom: 5px;
+      border-bottom: 2px solid #e8f0fe;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+      font-size: 14px;
+    }
+    th { background-color: #f8f9fa; color: #5f6368; text-align: left; }
+    .badge {
+      background: #d4edda;
+      color: #155724;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .error-msg {
+      color: #721c24;
+      background-color: #f8d7da;
+      padding: 12px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .nav-link {
+      display: inline-block;
+      margin-top: 15px;
+      color: #1a73e8;
+      text-decoration: none;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
 
+  <div class="card">
+    <h2>🔍 Consulta de Asistencia</h2>
+    
+    <div class="search-box">
+      <input type="text" id="codigoInput" placeholder="Ingrese Código (ej: EST001)">
+      <button onclick="buscarAsistencia()">Buscar</button>
+    </div>
+
+    <div id="resultado"></div>
+
+    <a class="nav-link" href="index.html">📷 Ir al Escáner QR</a>
+  </div>
+
+  <script>
+    // PEGA AQUÍ TU URL COMPLETA DE GOOGLE APPS SCRIPT
+    const WEB_APP_URL = "https://script.google.com/macros/s/TU_ID_DE_DESPLIEGUE/exec";
+
+    function buscarAsistencia() {
+      const codigo = document.getElementById('codigoInput').value.trim();
+      const resDiv = document.getElementById('resultado');
+
+      if (!codigo) {
+        resDiv.innerHTML = '<div class="error-msg">Por favor, ingrese un código de estudiante.</div>';
+        return;
+      }
+
+      resDiv.innerHTML = '⏳ Consultando registros...';
+
+      fetch(`${WEB_APP_URL}?action=consultar&qr=${encodeURIComponent(codigo)}`, {
+        method: 'GET',
+        redirect: 'follow'
+      })
+      .then(response => response.json())
+      .then(res => {
+        if (res.estado === 'ok') {
+          let html = `<div class="alumno-title">👤 ${res.nombre}</div>`;
+          
+          if (res.registros.length > 0) {
+            html += `
+              <table>
+                <thead>
+                  <tr>
+                    <th>Fecha</th>
+                    <th>Hora</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+            `;
+            res.registros.forEach(reg => {
+              html += `
+                <tr>
+                  <td>${reg.fecha}</td>
+                  <td>${reg.hora}</td>
+                  <td><span class="badge">${reg.estado}</span></td>
+                </tr>
+              `;
+            });
+            html += `</tbody></table>`;
+          } else {
+            html += '<p style="color: #5f6368;">El alumno está registrado pero no cuenta con marcaciones de asistencia aún.</p>';
+          }
+
+          resDiv.innerHTML = html;
+        } else {
+          resDiv.innerHTML = `<div class="error-msg">❌ ${res.mensaje}</div>`;
+        }
+      })
+      .catch(err => {
+        resDiv.innerHTML = '<div class="error-msg">❌ Error al conectar con el servidor.</div>';
+      });
+    }
+  </script>
+
+</body>
+</html>
