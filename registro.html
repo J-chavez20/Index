@@ -12,6 +12,7 @@
     .form-group { margin-bottom: 15px; text-align: left; }
     label { display: block; font-weight: bold; margin-bottom: 5px; color: #333; }
     input { width: 100%; padding: 10px; font-size: 15px; border: 1px solid #ccc; border-radius: 8px; outline: none; }
+    .uppercase-input { text-transform: uppercase; }
     button { width: 100%; padding: 12px; font-size: 16px; font-weight: bold; color: white; background-color: #1a73e8; border: none; border-radius: 8px; cursor: pointer; margin-top: 10px; }
     button:hover { background-color: #1557b0; }
     
@@ -49,16 +50,16 @@
       <form id="formAlumno" onsubmit="guardarAlumno(event)">
         <div class="form-group">
           <label>Código del Estudiante *</label>
-          <input type="text" id="codigo" placeholder="Ej: EST002" required>
+          <input type="text" id="codigo" class="uppercase-input" placeholder="Ej: EST002" required>
         </div>
 
         <div class="form-group">
           <label>Nombres y Apellidos *</label>
-          <input type="text" id="nombre" placeholder="Ej: Juan Pérez" required>
+          <input type="text" id="nombre" class="uppercase-input" placeholder="Ej: JUAN PÉREZ" required>
         </div>
 
         <div class="form-group">
-          <label>Celular 1</label>
+          <label>Celular 1 (Opcional)</label>
           <input type="tel" id="celular1" placeholder="Ej: 987654321">
         </div>
 
@@ -82,7 +83,7 @@
 
   <script>
     const WEB_APP_URL = "https://script.google.com/macros/s/TU_ID_DE_DESPLIEGUE/exec";
-    const PIN_CORRECTO = "1234"; // Cambia tu clave aquí
+    const PIN_CORRECTO = "1234"; // Define aquí tu PIN de acceso
 
     function validarPin() {
       const pinIngresado = document.getElementById('pinInput').value;
