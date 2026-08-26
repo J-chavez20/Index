@@ -107,7 +107,7 @@
 
   <script>
     // PEGA AQUÍ TU URL COMPLETA DE GOOGLE APPS SCRIPT
-    const WEB_APP_URL = "https://script.google.com/macros/s/TU_ID_DE_DESPLIEGUE/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzwrXe5Dzaiyq57gOvhKVTB8SJlLUZLdCmXDhKEdkAFxItRSL1lPum43yLUeP1AM7z_/exec";
 
     function buscarAsistencia() {
       const codigo = document.getElementById('codigoInput').value.trim();
